@@ -1,14 +1,6 @@
+# This module is a form of the file in http://flask.pocoo.org/snippets/133/ 
+
 import optparse
-from flask import Flask
-
-app = Flask(__name__)
-# do some Flask setup here
-
-@app.route('/',methods=['GET'])
-def route_index():
-	print("Hello,Blockchain!")
-	return "Hello,Blockchain!"
-
 def flaskrun(app, default_host="127.0.0.1", 
                   default_port="5000"):
     """
@@ -53,7 +45,3 @@ def flaskrun(app, default_host="127.0.0.1",
         host=options.host,
         port=int(options.port)
     )
-
-    
-flaskrun(app)
-
