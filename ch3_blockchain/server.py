@@ -1,7 +1,7 @@
 from flask import Flask,jsonify,request
 from flaskrun import flaskrun
 from Blockchain import Blockchain
-from Blockchain_Attack import Blockchain_Attack
+from Attack import Blockchain_Attack
 
 
 blockchain = Blockchain()
@@ -56,14 +56,24 @@ def route_block_list():
 
 	return jsonify(response),200
 
-@app.route('/attack/0_invalid_block',methods=['GET'])
-def route_attack_0_invalid_block():
-	Blockchain_Attack.attack0_invalid_block(blockchain);
+@app.route('/attack/0_invalid_timestamp',methods=['GET'])
+def route_attack0_invalid_timestamp():
+	Blockchain_Attack.attack0_invalid_timestamp(blockchain);
 	response = {
 		'message' : 'I modified current blockchain. Try /block/list again!',
 	}
 
 	return jsonify(response),200
+
+@app.route('/attack/1_invalid_hashchain',methods=['GET'])
+def route_attack1_invalid_block():
+	Blockchain_Attack.attack1_invalid_hashchain(blockchain);
+	response = {
+		'message' : 'I modified current blockchain. Try /block/list again!',
+	}
+
+	return jsonify(response),200
+
 
 flaskrun(app)
 

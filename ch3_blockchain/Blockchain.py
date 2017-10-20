@@ -8,6 +8,7 @@ class Blockchain(object):
 		self.chain = []
 		#Build genesis block
 		self.new_block()
+
 	@classmethod
 	def hash(cls, data):
 		return SHA256.new(data).hexdigest()
@@ -27,13 +28,33 @@ class Blockchain(object):
 		self.current_transaction = None
 		return block
 
-	def validate_chain(self,chain):
-		chain_length = len(self.chain)
+	@classmethod
+	def validate_chain_timesequence(cls,prev,curr):
+		return prev['timestamp'] < curr['timestamp'] 
+		
+	@classmethod
+	def validate_chain_hash(cls,prev,curr):
+		calc_hash = Blockchain.hash(json.dumps(prev).encode())
+		target_hash = curr['prev_hash']
+		return calc_hash == target_hash
+
+	@classmethod
+	def validate_chain(cls,chain):
+		chain_length = len(chain)
 		for index in range(1,chain_length):
-			prev_hash = Blockchain.hash(json.dumps(chain[index - 1]).encode())
-			if chain[index]['prev_hash'] != prev_hash :
-				return False
-		return True
+			test = {}
+			prev = chain[index-1]
+			curr = chain[index]
+			test['timestamp'] = Blockchain.validate_chain_timesequence(prev,curr)
+			test['hash'] = Blockchain.validate_chain_hash(prev,curr)
+			test['result'] = (test['timestamp'] == True and test['hash'] == True)
+			if test['result'] != True:
+				test['curr'] = curr
+				return test
+			
+		test = {}
+		test['result'] = True
+		return test
 
 	def new_transaction(self, amount):
 		self.current_transactions = {
