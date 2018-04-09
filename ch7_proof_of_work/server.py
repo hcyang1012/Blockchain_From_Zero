@@ -40,6 +40,7 @@ def route_block_new():
 		'index' : new_block['index'],
 		'transactions' : new_block['transactions'],
 		'prev_hash' : new_block['prev_hash'],
+		'nonce' : new_block['nonce'],
 	}
 
 	return jsonify(response),200

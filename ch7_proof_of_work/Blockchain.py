@@ -4,6 +4,7 @@ import json
 import requests
 
 class Blockchain(object):
+    current_difficulty = 5
     def __init__(self):
         self.current_transactions = []
         self.chain = []
@@ -17,6 +18,26 @@ class Blockchain(object):
     def hash(cls, data):
         return SHA256.new(data).hexdigest()
 
+
+    @classmethod
+    def validate_block(cls,block,difficulty):
+        if difficulty == 0: return True
+        target = ""
+        for index in range(0,difficulty):
+            target = target + "0"
+            
+        hash = Blockchain.hash(json.dumps(block).encode())
+        return hash[:difficulty] == target
+
+    @classmethod
+    def proof_of_work(cls,block,difficulty):
+        nonce = 0
+        while True:
+            block['nonce'] = nonce
+            if Blockchain.validate_block(block,difficulty) == True : break
+            nonce = nonce + 1
+        return nonce
+
     def new_block(self):
         if len(self.chain) > 0 :
             prev_hash = Blockchain.hash(json.dumps(self.chain[-1]).encode())
@@ -28,6 +49,13 @@ class Blockchain(object):
                 'transactions' : self.current_transactions,
                 'prev_hash' : prev_hash,
                 }
+
+        # ================== Proof of Work ==========================
+        # Do proof of work to get the proper nonce
+        nonce = Blockchain.proof_of_work(block,Blockchain.current_difficulty)  
+        # Add nonce to the new block
+        block['nonce'] = nonce
+        # ===========================================================
         self.chain.append(block)
         self.current_transaction = []
         return block
@@ -51,7 +79,8 @@ class Blockchain(object):
             curr = chain[index]
             test['timestamp'] = Blockchain.validate_chain_timesequence(prev,curr)
             test['hash'] = Blockchain.validate_chain_hash(prev,curr)
-            test['result'] = (test['timestamp'] == True and test['hash'] == True)
+            test['block'] = Blockchain.validate_block(curr,Blockchain.current_difficulty) 
+            test['result'] = (test['timestamp'] == True and test['hash'] == True and test['block'] == True)
             if test['result'] != True:
                 test['curr'] = curr
                 return test
@@ -83,7 +112,7 @@ class Blockchain(object):
         return newChain
 
     def consensus(self):
-        candidate_chain = self.chain;
+        candidate_chain = self.chain
         for chain in self.peer_chains:
             if len(candidate_chain) < len(chain):
                 candidate_chain = chain
