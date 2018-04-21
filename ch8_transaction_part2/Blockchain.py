@@ -5,6 +5,7 @@ from Crypto import Random
 from pathlib import Path
 import json
 import requests
+import binascii
 
 class Blockchain(object):
     current_difficulty = 0
@@ -21,12 +22,15 @@ class Blockchain(object):
         self.new_block()
 
     @classmethod
-    def hash(cls, data):
-        return SHA256.new(data).hexdigest()
-
+    def hash(cls, data,hexdigest = True):
+        if(hexdigest == True):
+            return SHA256.new(data).hexdigest()
+        else:
+            return SHA256.new(data).digest()
+            
 
     @classmethod
-    def validate_block(cls,block,difficulty):
+    def proof_of_work_validate(cls,block,difficulty):
         if difficulty == 0: return True
         target = ""
         for index in range(0,difficulty):
@@ -34,6 +38,39 @@ class Blockchain(object):
             
         hash = Blockchain.hash(json.dumps(block).encode())
         return hash[:difficulty] == target
+
+    @classmethod
+    def validate_transaction(cls,transaction):
+        header = transaction['header']
+        body = transaction['body']
+
+        if(body is None):
+            return False
+        if(header is None):
+            return False
+        
+        ref_hash = header['hash']
+        cur_hash = Blockchain.hash(json.dumps(body).encode())
+        pubKey = bytes(header['publicKey'])
+        public_key = RSA.importKey(pubKey)
+        signature = bytes(header['signature'])
+
+        hash_check = ref_hash == cur_hash
+        verify_result = public_key.verify(hash,signature)
+
+        result = (hash_check == True) and (verify_result == True)
+        return result
+
+    @classmethod
+    def validate_block(cls,block,difficulty):
+        pof_validity = Blockchain.proof_of_work_validate(block,difficulty)
+        transaction_validity = True
+        for transaction in block['transactions']:
+            valid = Blockchain.validate_transaction(transaction)
+            if(valid == False):
+                transaction_validity = False
+        result = (pof_validity == True) and (transaction_validity == True)
+        return result
 
     @classmethod
     def proof_of_work(cls,block,difficulty):
@@ -126,12 +163,15 @@ class Blockchain(object):
             },
             'header' : {},
         }
-        hash = Blockchain.hash(json.dumps(new_transaction['body']).encode())
-        signature = self.sign(int(hash,16))
+        hash = Blockchain.hash(json.dumps(new_transaction['body']).encode(),False)
+        signature = self.sign(hash)
         new_transaction['header']['hash'] = hash
-        new_transaction['header']['signature'] = signature.encode()
-        new_transaction['header']['publickey'] = str(self.key.public_key()[0])
+        new_transaction['header']['signature'] = signature
+        new_transaction['header']['publicKey'] = self.key.publickey().exportKey('PEM')
         self.current_transactions.append(new_transaction)
+    
+
+        
 
     def add_peer(self,peer):
         self.peers.append(peer)

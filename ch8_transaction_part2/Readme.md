@@ -2,8 +2,7 @@
 
 
 
-## Todo List
+## References
 
-1. Non-repudiation : Transaction Signing
-2. UTXO Validation
-3. Transaction Fee
+1. http://pycryptodome.readthedocs.io/en/latest/src/public_key/rsa.html
+2. ​
