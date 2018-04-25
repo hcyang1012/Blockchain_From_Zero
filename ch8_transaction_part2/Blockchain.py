@@ -49,14 +49,14 @@ class Blockchain(object):
         if(header is None):
             return False
         
-        ref_hash = header['hash']
-        cur_hash = Blockchain.hash(json.dumps(body).encode())
-        pubKey = bytes(header['publicKey'])
+        ref_hash = binascii.a2b_base64(header['hash'].encode('ascii'))
+        cur_hash = Blockchain.hash(json.dumps(body).encode(),False)
+        pubKey = binascii.a2b_base64(header['publicKey'].encode('ascii'))
         public_key = RSA.importKey(pubKey)
-        signature = bytes(header['signature'])
+        signature = header['signature']
 
         hash_check = ref_hash == cur_hash
-        verify_result = public_key.verify(hash,signature)
+        verify_result = public_key.verify(ref_hash,signature)
 
         result = (hash_check == True) and (verify_result == True)
         return result
@@ -100,7 +100,7 @@ class Blockchain(object):
         block['nonce'] = nonce
         # ===========================================================
         self.chain.append(block)
-        self.current_transaction = []
+        self.current_transactions = []
         return block
 
     @classmethod
@@ -165,9 +165,9 @@ class Blockchain(object):
         }
         hash = Blockchain.hash(json.dumps(new_transaction['body']).encode(),False)
         signature = self.sign(hash)
-        new_transaction['header']['hash'] = hash
+        new_transaction['header']['hash'] = binascii.b2a_base64(hash).decode('ascii')
         new_transaction['header']['signature'] = signature
-        new_transaction['header']['publicKey'] = self.key.publickey().exportKey('PEM')
+        new_transaction['header']['publicKey'] = binascii.b2a_base64(self.key.publickey().exportKey('PEM')).decode('ascii')
         self.current_transactions.append(new_transaction)
     
 
