@@ -14,7 +14,7 @@ class Blockchain(object):
 			'transactions' : self.current_transactions,
 		}
 		self.chain.append(block)
-		self.current_transaction = None
+		self.current_transactions = None
 		return block
 
 	def new_transaction(self, amount):

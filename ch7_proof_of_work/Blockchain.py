@@ -57,7 +57,7 @@ class Blockchain(object):
         block['nonce'] = nonce
         # ===========================================================
         self.chain.append(block)
-        self.current_transaction = []
+        self.current_transactions = []
         return block
 
     @classmethod

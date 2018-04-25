@@ -29,7 +29,7 @@ class Blockchain(object):
                 'prev_hash' : prev_hash,
                 }
         self.chain.append(block)
-        self.current_transaction = []
+        self.current_transactions = []
         return block
 
     @classmethod
