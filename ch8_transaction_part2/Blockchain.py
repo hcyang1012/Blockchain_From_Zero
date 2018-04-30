@@ -8,7 +8,7 @@ import requests
 import binascii
 
 class Blockchain(object):
-    current_difficulty = 0
+    current_difficulty = 2
     key_file_name = "mykey.pem"
 
     def __init__(self):
@@ -77,7 +77,7 @@ class Blockchain(object):
         nonce = 0
         while True:
             block['nonce'] = nonce
-            if Blockchain.validate_block(block,difficulty) == True : break
+            if Blockchain.proof_of_work_validate(block,difficulty) == True : break
             nonce = nonce + 1
         return nonce
 
