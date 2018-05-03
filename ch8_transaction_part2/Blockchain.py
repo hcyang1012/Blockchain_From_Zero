@@ -198,6 +198,6 @@ class Blockchain(object):
             if len(candidate_chain) < len(chain):
                 candidate_chain = chain
         self.chain = candidate_chain
-        peer_chains = []
+        self.peer_chains = []
         return self.chain
 

@@ -83,11 +83,11 @@ class Blockchain(object):
         return newChain
 
     def consensus(self):
-        candidate_chain = self.chain;
+        candidate_chain = self.chain
         for chain in self.peer_chains:
             if len(candidate_chain) < len(chain):
                 candidate_chain = chain
         self.chain = candidate_chain
-        peer_chains = []
+        self.peer_chains = []
         return self.chain
 
