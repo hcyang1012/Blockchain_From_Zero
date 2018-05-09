@@ -63,6 +63,38 @@ def route_wallet_info():
 	return jsonify(response),200
 ```
 
+## Transaction Validation 조건 추가
+
+기본적으로, Transaction 을 통해 보내는 사람은 해당 Transaction을 서명하는 사람과 일치해야 한다. 따라서 validation_transaction 함수 ID를 확인하는 조건을 추가하였다.(sender_check 조건 참조)
+
+
+
+```python
+    @classmethod
+    def validate_transaction(cls,transaction):
+        header = transaction['header']
+        body = transaction['body']
+
+        if(body is None):
+            return False
+        if(header is None):
+            return False
+        
+        ref_hash = binascii.a2b_base64(header['hash'].encode('ascii'))
+        cur_hash = Blockchain.hash(json.dumps(body).encode(),False)
+        pubKey = binascii.a2b_base64(header['publicKey'].encode('ascii'))
+        public_key = RSA.importKey(pubKey)
+        wallet_id = Blockchain.hash(public_key.exportKey('PEM'))        
+        signature = header['signature']
+
+        hash_check = ref_hash == cur_hash
+        verify_result = public_key.verify(ref_hash,signature)
+        sender_check = (wallet_id == body['sender']) #송금자는 서명자와 일치하여야 한다.
+
+        result = (hash_check == True) and (verify_result == True) and (sender_check)
+        return result
+```
+
 
 
 ## Transaction 탐색

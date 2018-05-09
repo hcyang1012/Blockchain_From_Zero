@@ -62,9 +62,9 @@ class Blockchain(object):
 
         hash_check = ref_hash == cur_hash
         verify_result = public_key.verify(ref_hash,signature)
-        id_check = (wallet_id == body['sender'])
+        sender_check = (wallet_id == body['sender'])
 
-        result = (hash_check == True) and (verify_result == True)
+        result = (hash_check == True) and (verify_result == True) and (sender_check)
         return result
 
     @classmethod
