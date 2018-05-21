@@ -1,4 +1,4 @@
-# Chapter 8 : Transaction Part 2 - Wallet, Shared Ledger
+# Chapter 9 : Transaction Part 3 - Wallet, Shared Ledger
 
 
 
