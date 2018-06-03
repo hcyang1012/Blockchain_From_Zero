@@ -169,18 +169,19 @@ class Blockchain(object):
         signature = self.key.sign(hash,'')
         return signature
 
+
+
     def new_transaction(self, values, coinbase = False):
         new_transaction = {
             'body' : {
-                'sender' : self.wallet['id'],
-                'receiver' : values['receiver'],
-                'amount' : values['amount']
+                'TXIN' : values['TXIN'],
+                'TXOUT' : values['TXOUT'],
             },
             'header' : {},
         }
         hash = Blockchain.hash(json.dumps(new_transaction['body']).encode(),False)
         signature = self.sign(hash)
-        #new_transaction['header']['id'] = str(uuid4()).replace('-','')
+        new_transaction['header']['id'] = str(uuid4()).replace('-','')
         new_transaction['header']['hash'] = binascii.b2a_base64(hash).decode('ascii')
         new_transaction['header']['signature'] = signature
         new_transaction['header']['publicKey'] = binascii.b2a_base64(self.key.publickey().exportKey('PEM')).decode('ascii')
@@ -223,7 +224,7 @@ class Blockchain(object):
         self.ledger = {}
         for block in self.chain:
             for transaction in block['transactions']:
-                receiver =  transaction['body']['receiver']
+                TXIN =  transaction['body']['TXIN']
                 if receiver in self.ledger:
                     self.ledger[receiver] = self.ledger[receiver] + transaction['body']['amount']
                 else:

@@ -41,7 +41,7 @@ Coinbase의 역할은 새로운 Coin을 발행하는 것이다. 즉 사용자 �
 - 매 Block의 첫 Transaction은 Coinbase로 정한다.
 - Coinbase 의 입력은 어느 값이든 상관없다.
 - Coinbase 의 출력 Transaction은 다음과 같다.
-  - #### 소유자 : Block 을 생성한 사람
+  - 소유자 : Block 을 생성한 사람
   - Amount : 100 (임의의 값)
 
 Bitcoin의 반감기와 같은 개념은 여기서는 도입하지 않는다.
@@ -125,6 +125,48 @@ UTXO(Unspend Transaction Out)는 참조하고 있는 TXIN이 없는 TXOUT으로,
 * Transaction 서명 Wallet ID == (모든 TXIN의 Receiver)
 * Transaction 서명이 유효
 
-#### Shared Ledger Update
+#### Shared Ledger 구조 변경
 
-Transaction 의 유효성 검사를 수행하기 위해서는 현재 UTXO의 목록을 알고 있어야 하기 때문에 Ledger의 	
+현재까지 설계된 Ledger는 단순히 각 사용자 ID 별 잔액만을 저장하고 있다. UTXO를 구분하기 위해서는 Ledger를 통해 특정 Transaction 이 이미 사용된 Transaction 인지 아닌지 구분 할 수 있어야 한다. 따라서 Ledger은 Transaction 의 Map(TXID,TX) 이 되도록 하였다. 정리하면, Transaction 과 Shared Ledger는 다음과 같은 자료구조를 가진다.
+
+* Key : TXID
+* Data : Transaction의 배열. Transaction 은 다음과 같은 자료구조를 가진다.
+  * TXID
+  * TXIN의 배열 : 각 TXIN은 다음과 같은 자료구조를 가진다.
+    * 대상 Transaction 의 TXID
+    * 대상 Transaction의 TXOUT의 배열 Index
+  * TXOUT의 배열 : 각 TXOUT은 다음과 같은 자료구조를 가진다 
+    * Receiver : 새로운 소유자 Wallet ID
+    * Amount :  전달되는 양
+    * Spent : 처음 생성 시에는 False이나, 이후 새 Transaction에 의해 Reference 될 시 True 로 변경된다.
+
+### 구현
+
+#### Transaction 생성 함수 변경
+
+Transaction 의 구조가 다소 크게 바뀌었다. 이에 Transaction 생성 함수도 변경이 필요하다.
+
+##### TXID 추가
+
+Transaction 생성 시 다음과 같이 TXID가 부여되도록 하였다.
+
+```python
+new_transaction['header']['id'] = str(uuid4()).replace('-','')
+```
+
+##### TXIN, TXOUT 항목 추가
+
+새로 정의한 Transaction의 형식으로 만들어지도록 Transaction의 구조를 재정의하였다. 기존에 사용된 'amount' 항목은 삭제하였다. 
+
+```python
+        new_transaction = {
+            'body' : {
+                'TXIN' : values['TXIN'],
+                'TXOUT' : values['TXOUT'],
+            },
+            'header' : {},
+        }
+```
+
+
+
